@@ -60,7 +60,7 @@ public class APITest {
         }
         System.out.println(authorizationToken);
         System.out.println(response.getBody().asString());
-        Assert.assertEquals(response.getStatusCode(), 500);
+        Assert.assertEquals(response.getStatusCode(), 200);
     }
 
 //    @Test(dependsOnMethods = {"LoginUser_POST"}, priority = 3)
