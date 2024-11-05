@@ -2,7 +2,6 @@ name: Scheduled API Test Runs
 
 on:  
   workflow_dispatch:
-
 jobs:
   run-api-tests:
     runs-on: ubuntu-latest
@@ -26,36 +25,50 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Compile Java Code
+      - name: Run Tests with Maven
+        run: mvn test
+
+      - name: Generate Allure Report
         run: |
-          javac -d out src/main/java/com/example/*.java  # Adjust the path according to your project structure
+          mvn allure:report  # Make sure you have the allure-maven-plugin configured in your pom.xml
 
-      - name: Run Java Application
-        id: run-java
+      - name: Check for Test Failures
+        id: check-failures
         run: |
-          java -cp out com.example.YourMainClass  # Replace 'YourMainClass' with the actual main class name
+          if grep -q "<failure" target/surefire-reports/*.xml; then
+            echo "Test failures detected."
+            echo "fail=true" >> $GITHUB_ENV  # Set an environment variable
+          else
+            echo "No test failures detected."
+            echo "fail=false" >> $GITHUB_ENV  # Set an environment variable
+          fi
 
-      - name: Capture Output
-        id: capture-output
-        run: echo "${{ steps.run-java.outputs.stdout }}" > output.txt  # Capture the output to a file
-
-      - name: Upload Output
+      - name: Upload Test Reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: java-output
-          path: output.txt
+          name: test-reports
+          path: target/surefire-reports/*.xml  # Default location for Maven JUnit XML reports
+
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: target/site/allure-maven-plugin  # Default location for Allure reports
 
       - name: Send Email Notification
-        if: failure()  # Adjust this condition based on when you want to send the email
+        if: failure()  # Only send if previous step failed
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
           username: jobs619733@gmail.com  # Your Gmail username
           password: genv yxfs gpty ekro  # Your Gmail password
-          subject: 'Java Application Output Notification'
+          subject: 'Test Results Notification'
           body: |
-            The Java application has run successfully. Please find the output attached.
+            The API tests have failed. Please check the details in the test reports.
           to: s96435493@gmail.com  # Replace with the recipient's email address
           from: jobs619733@gmail.com  # Your Gmail address
-          attachments: output.txt  # Path to the output file
+          attachments: |
+            target/site/allure-maven-plugin/index.html  # Path to the Allure report
