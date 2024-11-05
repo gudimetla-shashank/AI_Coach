@@ -65,7 +65,7 @@ jobs:
 
       - name: Send Email Notification
         if: env.fail == 'true'  # Only send if there were test failures
-        uses: dawidd6/action-send-mail@v4
+        uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
