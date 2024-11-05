@@ -23,8 +23,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Run Tests with Maven
-        run: mvn test
+
+      - name: Run API Tests
+        uses: actions/mvn test@v4  # Replace with your actual action name
+        with:
+          distribution: 'staging'
 
       - name: Upload Test Reports
         if: always()
