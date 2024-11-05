@@ -88,7 +88,7 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           username: jobs619733@gmail.com
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}  # Use a GitHub secret for your password
+          password: isjt npgs ozpx fxmg  # Use a GitHub secret for your password
           subject: 'Test Results Notification'
           body: |
             The API tests have failed. Please find the attached Allure report for details.
