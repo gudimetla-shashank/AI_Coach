@@ -1,66 +1,27 @@
-name: Scheduled API Test Runs
-
-on:
-  workflow_dispatch:  # Manual trigger
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: zulu
-          java-version: 21
-
-      - name: Install Allure
-        run: |
-          curl -o allure-2.13.8.tgz -OLs https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.13.8/allure-commandline-2.13.8.tgz
-          sudo tar -zxvf allure-2.13.8.tgz -C /opt/
-          sudo ln -s /opt/allure-2.13.8/bin/allure /usr/bin/allure
-
-      - name: Run tests
-        run: mvn clean test -Dtestng=testng.xml
-
-      - name: Publish Allure results
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results
-          path: allure-results
-
-      - name: Generate Allure report
-        run: allure generate allure-results --clean -o allure-report
-
-      - name: Publish Allure report
-        uses: actions/upload-artifact@v4
+ name: Download Allure report for email
+        if: steps.test_run.outcome == 'failure'  # Only download if tests failed
+        uses: actions/download-artifact@v4
         with:
           name: allure-report
           path: allure-report
 
-      - name: Load test report history
-        uses: actions/checkout@v4
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
+      - name: Zip Allure report for email
+        if: steps.test_run.outcome == 'failure'  # Only zip if tests failed
+        run: |
+          cd allure-report
+          zip -r ../allure-report.zip . 
 
-      - name: Build test report
-        uses: simple-elf/allure-report-action@v1.7
-        if: always()
+      - name: Send Email Notification
+        if: steps.test_run.outcome == 'failure'  # Only send if there were test failures
+        uses: dawidd6/action-send-mail@v3
         with:
-          gh_pages: gh-pages
-          allure_history: allure-history
-          allure_results: allure-results
-
-      - name: Publish test report
-        uses: peaceiris/actions-gh-pages@v4
-        if: always()
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
-
-      
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: jobs619733@gmail.com  # Your Gmail username
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}  # Your Gmail app-specific password
+          subject: 'Test Results Notification'
+          body: |
+            The API tests have failed. Please find the attached Allure report for details.
+          to: s96435493@gmail.com
+          from: jobs619733@gmail.com
+          attachments: allure-report.zip  # Attach the zipped Allure report
