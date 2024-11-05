@@ -70,7 +70,7 @@ jobs:
         run: echo "DEPLOYMENT_URL=https://gudimetla-shashank.github.io/AI_Coach/" >> $GITHUB_ENV
 
       - name: Send Email Notification
-        if: steps.test_run.outcome == 'failure'  # Only send if there were test failures
+        if: failure()   # Only send if there were test failures
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
