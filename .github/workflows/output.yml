@@ -24,6 +24,16 @@ jobs:
       - name: Run tests
         id: test_run
         run: mvn clean test -Dtestng=testng.xml
+        continue-on-error: true  # Allow the workflow to proceed even if tests fail
+
+      - name: Check for Test Failures
+        id: check_failures
+        run: |
+          if grep -q "<failure" target/surefire-reports/*.xml; then
+            echo "fail=true" >> $GITHUB_ENV
+          else
+            echo "fail=false" >> $GITHUB_ENV
+          fi
 
       - name: Publish Allure results
         uses: actions/upload-artifact@v4
@@ -57,7 +67,7 @@ jobs:
           allure_results: allure-results
 
       - name: Publish test report
-        id: publish_report  # ID to reference this step
+        id: publish_report
         uses: peaceiris/actions-gh-pages@v4
         if: always()
         with:
@@ -65,30 +75,23 @@ jobs:
           publish_branch: gh-pages
           publish_dir: allure-history
 
-      - name: Download Allure report for email
-        if: steps.test_run.outcome == 'failure'  # Only download if tests failed
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-report
-          path: allure-report
-
       - name: Zip Allure report for email
-        if: steps.test_run.outcome == 'failure'  # Only zip if tests failed
+        if: env.fail == 'true'  # Only zip if tests failed
         run: |
           cd allure-report
           zip -r ../allure-report.zip . 
 
       - name: Send Email Notification
-        if: steps.test_run.outcome == 'failure'  # Only send if there were test failures
+        if: env.fail == 'true'  # Only send if there were test failures
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: jobs619733@gmail.com  # Your Gmail username
-          password: genv yxfs gpty ekro # Your Gmail app-specific password
+          username: jobs619733@gmail.com
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}  # Use a GitHub secret for your password
           subject: 'Test Results Notification'
           body: |
             The API tests have failed. Please find the attached Allure report for details.
           to: s96435493@gmail.com
           from: jobs619733@gmail.com
-          attachments: allure-report.zip  # Attach the zipped Allure report
+          attachments: allure-report.zip
