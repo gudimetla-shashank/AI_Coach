@@ -1,8 +1,6 @@
 name: Scheduled API Test Runs
 
-on:
-  schedule:
-    - cron: '0 */1 * * *'  
+on:  
   workflow_dispatch:
 jobs:
   run-api-tests:
