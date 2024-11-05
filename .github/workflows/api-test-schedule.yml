@@ -24,10 +24,8 @@ jobs:
             ${{ runner.os }}-maven-
 
 
-      - name: Run API Tests
-        uses: actions/src/test/java/APITest.java@v4  # Replace with your actual action name
-        with:
-          distribution: 'staging'
+      - name: Run Tests with Maven
+        run: mvn test
 
       - name: Upload Test Reports
         if: always()
