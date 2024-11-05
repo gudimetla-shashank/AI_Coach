@@ -72,7 +72,7 @@ jobs:
       - name: Set Deployment URL
         if: always()  # Ensure this step runs after publishing the report
         run: |
-          echo "DEPLOYMENT_URL=${{ env.BASE_URL }}/${{ github.run_number }}/$#" >> $GITHUB_ENV
+          echo "DEPLOYMENT_URL=${{ env.BASE_URL }}/${{ github.run_number }}/#" >> $GITHUB_ENV
           echo "Deployment URL is set to ${{ env.DEPLOYMENT_URL }}"
 
 
