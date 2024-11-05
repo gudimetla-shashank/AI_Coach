@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
-          path: target/site/allure-maven-plugin  # Default location for Allure reports
+          path: target/site/allure-maven-plugin  # Path to the Allure report directory
 
       - name: Send Email Notification
         if: failure()  # Only send if previous step failed
