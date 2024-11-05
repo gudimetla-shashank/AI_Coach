@@ -29,6 +29,17 @@ jobs:
       - name: Run Tests with Maven
         run: mvn test
 
+      - name: Check for Test Failures
+        id: check-failures
+        run: |
+          if grep -q "<failure" target/surefire-reports/*.xml; then
+            echo "Test failures detected."
+            echo "fail=true" >> $GITHUB_ENV  # Set an environment variable
+          else
+            echo "No test failures detected."
+            echo "fail=false" >> $GITHUB_ENV  # Set an environment variable
+          fi
+
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
