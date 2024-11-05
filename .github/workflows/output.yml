@@ -1,67 +1,67 @@
 name: Scheduled API Test Runs
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger
 
 jobs:
-  run-api-tests:
+  test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
         with:
-          java-version: '21'
-          distribution: 'temurin'  
-          java-package: jdk
+          distribution: zulu
+          java-version: 21
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Run Tests with Maven
-        run: mvn -Dmaven.test.failure.ignore=true clean test
-
-      - name: Generate Allure Report
+      - name: Install Allure
         run: |
-          mvn allure:report  # Generate the Allure report files
-          mvn allure:aggregate  # Aggregate results for a complete report
+          curl -o allure-2.13.8.tgz -OLs https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.13.8/allure-commandline-2.13.8.tgz
+          sudo tar -zxvf allure-2.13.8.tgz -C /opt/
+          sudo ln -s /opt/allure-2.13.8/bin/allure /usr/bin/allure
 
-      - name: Package Allure Report
-        run: zip -r allure-report.zip target/site/allure-maven-plugin
-        # Packages the Allure report into a zip file for easy downloading and emailing
+      - name: Run tests
+        run: mvn clean test -Dtestng=testng.xml
 
-      - name: Check for Test Failures
-        id: check-failures
-        run: |
-          if grep -q "<failure" target/surefire-reports/*.xml; then
-            echo "Test failures detected."
-            echo "fail=true" >> $GITHUB_ENV  # Set an environment variable
-          else
-            echo "No test failures detected."
-            echo "fail=false" >> $GITHUB_ENV  # Set an environment variable
-          fi
-
-      - name: Upload Test Reports
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Publish Allure results
+        uses: actions/upload-artifact@v3
         with:
-          name: test-reports
-          path: target/surefire-reports/*.xml
+          name: allure-results
+          path: allure-results
 
-      - name: Upload Allure Report Zip
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Generate Allure report
+        run: allure generate allure-results --clean -o allure-report
+
+      - name: Publish Allure report
+        uses: actions/upload-artifact@v3
         with:
           name: allure-report
-          path: allure-report.zip  # Upload the zipped Allure report
+          path: allure-report
+
+      - name: Load test report history
+        uses: actions/checkout@v3
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Build test report
+        uses: simple-elf/allure-report-action@v1.7
+        if: always()
+        with:
+          gh_pages: gh-pages
+          allure_history: allure-history
+          allure_results: allure-results
+
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@v3
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
 
       - name: Send Email Notification
         if: env.fail == 'true'  # Only send if there were test failures
