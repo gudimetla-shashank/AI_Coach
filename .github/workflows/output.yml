@@ -6,6 +6,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      BASE_URL: "https://gudimetla-shashank.github.io/AI_Coach"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -65,11 +68,11 @@ jobs:
           publish_branch: gh-pages
           publish_dir: allure-history
 
-      # Set the GitHub Pages deployment URL dynamically after publishing
+      # Set the GitHub Pages deployment URL with the unique workflow run number
       - name: Set Deployment URL
         if: always()  # Ensure this step runs after publishing the report
         run: |
-          echo "DEPLOYMENT_URL=https://gudimetla-shashank.github.io/AI_Coach/" >> $GITHUB_ENV
+          echo "DEPLOYMENT_URL=${{ env.BASE_URL }}/runs/${{ github.run_number }}" >> $GITHUB_ENV
           echo "Deployment URL is set to ${{ env.DEPLOYMENT_URL }}"
 
 
