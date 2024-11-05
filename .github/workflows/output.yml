@@ -85,7 +85,7 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           username: jobs619733@gmail.com  # Your Gmail username
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}  # Your Gmail app-specific password
+          password: genv yxfs gpty ekro # Your Gmail app-specific password
           subject: 'Test Results Notification'
           body: |
             The API tests have failed. Please find the attached Allure report for details.
