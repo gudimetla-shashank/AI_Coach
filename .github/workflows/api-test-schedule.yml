@@ -58,5 +58,5 @@ jobs:
           subject: 'Test Results Notification'
           body: |
             The API tests have failed. Please check the details in the test reports.
-          to: recipient@example.com  # Replace with the recipient's email address
+          to: s96435493@gmail.com  # Replace with the recipient's email address
           from: jobs619733@gmail.com  # Your Gmail address
