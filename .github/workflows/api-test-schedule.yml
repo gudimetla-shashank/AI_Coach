@@ -46,3 +46,17 @@ jobs:
         with:
           name: test-reports
           path: target/surefire-reports/*.xml  # Default location for Maven JUnit XML reports
+      - name: Send Email Notification
+        if: failure()  # Only send if previous step failed
+        uses: dawidd6/action-send-mail@v3
+        with:
+          # Replace with your Gmail credentials and recipient email
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.jobs619733@gmail.com }}  # Add your Gmail username as a secret
+          password: ${{ secrets.Shashank2004@ }}  # Add your Gmail app password as a secret
+          subject: 'Test Results Notification'
+          body: |
+            The API tests have failed. Please check the details in the test reports.
+          to: jobs619733@gmail.com  # Replace with the recipient's email
+          from: ${{ secrets.GMAIL_USERNAME }}
