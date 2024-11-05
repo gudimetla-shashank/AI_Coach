@@ -34,4 +34,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: target/surefire-reports/results.xml  # Default location for Maven JUnit XML reports
+          path: target/surefire-reports/*.xml  # Default location for Maven JUnit XML reports
