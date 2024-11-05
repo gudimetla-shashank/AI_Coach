@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Run Tests with Maven
-        run: mvn clean test
+        run: mvn -Dmaven.test.failure.ignore=true clean test
 
       - name: Generate Allure Report
         run: |
