@@ -54,7 +54,7 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           username: jobs619733@gmail.com  # Your Gmail username
-          password: Shashank@2004  # Your Gmail password
+          password: genv yxfs gpty ekro  # Your Gmail password
           subject: 'Test Results Notification'
           body: |
             The API tests have failed. Please check the details in the test reports.
