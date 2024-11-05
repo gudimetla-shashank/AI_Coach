@@ -2,6 +2,7 @@ name: Scheduled API Test Runs
 
 on:  
   workflow_dispatch:
+
 jobs:
   run-api-tests:
     runs-on: ubuntu-latest
@@ -30,45 +31,37 @@ jobs:
 
       - name: Generate Allure Report
         run: |
-          mvn allure:report  # Make sure you have the allure-maven-plugin configured in your pom.xml
+          mvn allure:report
 
-      - name: Check for Test Failures
-        id: check-failures
-        run: |
-          if grep -q "<failure" target/surefire-reports/*.xml; then
-            echo "Test failures detected."
-            echo "fail=true" >> $GITHUB_ENV  # Set an environment variable
-          else
-            echo "No test failures detected."
-            echo "fail=false" >> $GITHUB_ENV  # Set an environment variable
-          fi
+      - name: List Allure Directory (for debugging)
+        run: ls -R target/site/allure-maven-plugin
 
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: target/surefire-reports/*.xml  # Default location for Maven JUnit XML reports
+          path: target/surefire-reports/*.xml
 
       - name: Upload Allure Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
-          path: target/site/allure-maven-plugin  # Path to the Allure report directory
+          path: target/site/allure-maven-plugin  # Verify if this path is correct
 
       - name: Send Email Notification
-        if: failure()  # Only send if previous step failed
+        if: failure()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: jobs619733@gmail.com  # Your Gmail username
-          password: genv yxfs gpty ekro  # Your Gmail password
+          username: jobs619733@gmail.com
+          password: genv yxfs gpty ekro
           subject: 'Test Results Notification'
           body: |
             The API tests have failed. Please check the details in the test reports.
-          to: s96435493@gmail.com  # Replace with the recipient's email address
-          from: jobs619733@gmail.com  # Your Gmail address
+          to: s96435493@gmail.com
+          from: jobs619733@gmail.com
           attachments: |
-            target/site/allure-maven-plugin/index.html  # Path to the Allure report
+            target/site/allure-maven-plugin/index.html
