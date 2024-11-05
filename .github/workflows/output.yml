@@ -1,0 +1,61 @@
+name: Scheduled API Test Runs
+
+on:  
+  workflow_dispatch:
+
+jobs:
+  run-api-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'  
+          java-package: jdk
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Compile Java Code
+        run: |
+          javac -d out src/main/java/com/example/*.java  # Adjust the path according to your project structure
+
+      - name: Run Java Application
+        id: run-java
+        run: |
+          java -cp out com.example.YourMainClass  # Replace 'YourMainClass' with the actual main class name
+
+      - name: Capture Output
+        id: capture-output
+        run: echo "${{ steps.run-java.outputs.stdout }}" > output.txt  # Capture the output to a file
+
+      - name: Upload Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-output
+          path: output.txt
+
+      - name: Send Email Notification
+        if: failure()  # Adjust this condition based on when you want to send the email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: jobs619733@gmail.com  # Your Gmail username
+          password: genv yxfs gpty ekro  # Your Gmail password
+          subject: 'Java Application Output Notification'
+          body: |
+            The Java application has run successfully. Please find the output attached.
+          to: s96435493@gmail.com  # Replace with the recipient's email address
+          from: jobs619733@gmail.com  # Your Gmail address
+          attachments: output.txt  # Path to the output file
