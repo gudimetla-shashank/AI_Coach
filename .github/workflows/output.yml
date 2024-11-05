@@ -24,16 +24,6 @@ jobs:
       - name: Run tests
         id: test_run
         run: mvn clean test -Dtestng=testng.xml
-        continue-on-error: true  # Allow the workflow to proceed even if tests fail
-
-      - name: Check for Test Failures
-        id: check_failures
-        run: |
-          if grep -q "<failure" target/surefire-reports/*.xml; then
-            echo "fail=true" >> $GITHUB_ENV
-          else
-            echo "fail=false" >> $GITHUB_ENV
-          fi
 
       - name: Publish Allure results
         uses: actions/upload-artifact@v4
@@ -75,23 +65,21 @@ jobs:
           publish_branch: gh-pages
           publish_dir: allure-history
 
-      - name: Zip Allure report for email
-        if: env.fail == 'true'  # Only zip if tests failed
-        run: |
-          cd allure-report
-          zip -r ../allure-report.zip . 
+      # Set the GitHub Pages deployment URL dynamically
+      - name: Set Deployment URL
+        run: echo "DEPLOYMENT_URL=https://gudimetla-shashank.github.io/AI_Coach/" >> $GITHUB_ENV
 
       - name: Send Email Notification
-        if: env.fail == 'true'  # Only send if there were test failures
+        if: steps.test_run.outcome == 'failure'  # Only send if there were test failures
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
           username: jobs619733@gmail.com
-          password: isjt npgs ozpx fxmg  # Use a GitHub secret for your password
+          password: isjt npgs ozpx fxmg  # Use GitHub secret for security
           subject: 'Test Results Notification'
           body: |
-            The API tests have failed. Please find the attached Allure report for details.
+            The API tests have failed. You can review the test report at the following URL:
+            ${{ env.DEPLOYMENT_URL }}
           to: s96435493@gmail.com
           from: jobs619733@gmail.com
-          attachments: allure-report.zip
