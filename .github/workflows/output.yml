@@ -1,6 +1,6 @@
 name: Scheduled API Test Runs
 
-on:  
+on:
   workflow_dispatch:
 
 jobs:
@@ -27,14 +27,27 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Run Tests with Maven
-        run: mvn test
+        run: mvn clean test
 
       - name: Generate Allure Report
         run: |
-          mvn allure:report
+          mvn allure:report  # Generate the Allure report files
+          mvn allure:aggregate  # Aggregate results for a complete report
 
-      - name: List Allure Directory (for debugging)
-        run: ls -R target/site/allure-maven-plugin
+      - name: Package Allure Report
+        run: zip -r allure-report.zip target/site/allure-maven-plugin
+        # Packages the Allure report into a zip file for easy downloading and emailing
+
+      - name: Check for Test Failures
+        id: check-failures
+        run: |
+          if grep -q "<failure" target/surefire-reports/*.xml; then
+            echo "Test failures detected."
+            echo "fail=true" >> $GITHUB_ENV  # Set an environment variable
+          else
+            echo "No test failures detected."
+            echo "fail=false" >> $GITHUB_ENV  # Set an environment variable
+          fi
 
       - name: Upload Test Reports
         if: always()
@@ -43,25 +56,24 @@ jobs:
           name: test-reports
           path: target/surefire-reports/*.xml
 
-      - name: Upload Allure Report
+      - name: Upload Allure Report Zip
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
-          path: target/site/allure-maven-plugin  # Verify if this path is correct
+          path: allure-report.zip  # Upload the zipped Allure report
 
       - name: Send Email Notification
-        if: failure()
+        if: env.fail == 'true'  # Only send if there were test failures
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: jobs619733@gmail.com
-          password: genv yxfs gpty ekro
+          username: jobs619733@gmail.com  # Your Gmail username
+          password: genv yxfs gpty ekro  # Your Gmail app-specific password
           subject: 'Test Results Notification'
           body: |
-            The API tests have failed. Please check the details in the test reports.
+            The API tests have failed. Please check the attached Allure report for details.
           to: s96435493@gmail.com
           from: jobs619733@gmail.com
-          attachments: |
-            target/site/allure-maven-plugin/index.html
+          attachments: allure-report.zip  # Attach the zipped Allure report
