@@ -65,10 +65,13 @@ jobs:
           publish_branch: gh-pages
           publish_dir: allure-history
 
-      # Set the GitHub Pages deployment URL dynamically
+      # Set the GitHub Pages deployment URL dynamically after publishing
       - name: Set Deployment URL
-        if: always()  # Ensure this step runs regardless of previous step outcomes
-        run: echo "DEPLOYMENT_URL=https://gudimetla-shashank.github.io/AI_Coach/" >> $GITHUB_ENV
+        if: always()  # Ensure this step runs after publishing the report
+        run: |
+          echo "DEPLOYMENT_URL=https://gudimetla-shashank.github.io/AI_Coach/" >> $GITHUB_ENV
+          echo "Deployment URL is set to ${{ env.DEPLOYMENT_URL }}"
+
 
       - name: Send Email Notification
         if: failure()   # Only send if there were test failures
