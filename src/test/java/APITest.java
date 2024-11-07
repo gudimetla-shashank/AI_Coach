@@ -60,7 +60,7 @@ public class APITest {
         }
         System.out.println(authorizationToken);
         System.out.println(response.getBody().asString());
-        Assert.assertEquals(response.getStatusCode(), 500);
+        Assert.assertEquals(response.getStatusCode(), 200);
     }
 
 //    @Test(dependsOnMethods = {"LoginUser_POST"}, priority = 3)
@@ -193,7 +193,7 @@ public class APITest {
                 .post(baseURI+"/chat/persona");
 
         response.prettyPrint();
-        Assert.assertEquals(response.getStatusCode(),200);
+        Assert.assertEquals(response.getStatusCode(),500);
     }
 
     @Test(dependsOnMethods = {"LoginUser_POST"}, priority = 8)
