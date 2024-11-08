@@ -193,7 +193,7 @@ public class APITest {
                 .post(baseURI+"/chat/persona");
 
         response.prettyPrint();
-        Assert.assertEquals(response.getStatusCode(),500);
+        Assert.assertEquals(response.getStatusCode(),200);
     }
 
     @Test(dependsOnMethods = {"LoginUser_POST"}, priority = 8)
